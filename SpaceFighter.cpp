@@ -42,6 +42,8 @@ class Player: public sf::Sprite {
     sf::Vector2f position;
     int move_x;
     int move_y;
+
+    sf::Time shoot_timer = sf::seconds(0);
     
     public:
 
@@ -84,13 +86,24 @@ class Player: public sf::Sprite {
     
     bool shoot () {
 
-        position = getPosition();
+        if (shoot_timer < sf::seconds(0)) {
+            position = getPosition();
 
-        Bullet bullet(position.x, position.y+43.5, damage);
+            Bullet bullet(position.x, position.y+43.5, damage);
 
-        bullet_array.push_back(
-            bullet
-        );
+            bullet_array.push_back(
+                bullet
+            );
+
+            shoot_timer = sf::milliseconds(400);
+        }
+
+        return true;
+    }
+
+    bool update (sf::Time dt) {
+
+        shoot_timer -= dt;
 
         return true;
     }
@@ -101,6 +114,7 @@ class Player: public sf::Sprite {
 class SpaceFighter {
 
     vector<int> bullets_clear;
+    sf::Clock clock;
 
     public:
         SpaceFighter() {
@@ -149,6 +163,10 @@ class SpaceFighter {
                 for (int i=0; i<bullets_clear.size(); i++) {
                     player.bullet_array.erase(player.bullet_array.begin()+i);
                 }
+
+                sf::Time elapsed = clock.restart();
+                player.update(elapsed);
+
                 bullets_clear.clear();
 
                 window.draw(player);
