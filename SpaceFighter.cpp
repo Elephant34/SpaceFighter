@@ -1,7 +1,34 @@
 #include <iostream>
+#include <stdlib.h>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 using namespace std;
+
+
+class Enemy: public sf::Sprite {
+    float speed = 4.f;
+    int damage = 1;
+    int health = 2;
+
+    sf::Vector2f position;
+
+    public:
+        static sf::Texture enemy_texture;
+        Enemy (int x, int y) {
+            if(!enemy_texture.loadFromFile("assets/Enemies/enemyRed4.png")) {
+                cout << "Error loading texture";
+            }
+            enemy_texture.setSmooth(true);
+
+            setTexture(enemy_texture);
+
+            setScale(sf::Vector2f(0.75f, 0.75f));
+
+            setOrigin(sf::Vector2f(49.5f, 37.5f));
+            setRotation(90.f);
+            setPosition(x, y);
+        }
+};
 
 
 class Bullet: public sf::Sprite {
@@ -12,11 +39,13 @@ class Bullet: public sf::Sprite {
 
     public:
         static sf::Texture bullet_texture;
-        Bullet (int x, int y, int damage) {
+        Bullet (int x, int y, int given_damage) {
             if(!bullet_texture.loadFromFile("assets/Lasers/laserBlue02.png")) {
-                std::cout << "Error loading texture";
+                cout << "Error loading texture";
             }
             bullet_texture.setSmooth(true);
+
+            damage = given_damage;
 
             setTexture(bullet_texture);
 
@@ -54,7 +83,7 @@ class Player: public sf::Sprite {
 
         Player () {
             if(!player_texture.loadFromFile("assets/playerShip1_blue.png")) {
-                std::cout << "Error loading texture";
+                cout << "Error loading texture";
             }
             player_texture.setSmooth(true);
 
@@ -115,7 +144,10 @@ class Player: public sf::Sprite {
 class SpaceFighter {
 
     vector<int> bullets_clear;
-    sf::Clock clock;
+    sf::Clock dt_clock;
+    sf::Clock spawn_timer;
+
+    vector<Enemy> enemy_array;
 
     public:
         SpaceFighter() {
@@ -152,6 +184,18 @@ class SpaceFighter {
                     player.movePlayer(0.f, -1.f);
                 }
 
+                sf::Time elapsed = dt_clock.restart();
+                player.update(elapsed);
+
+                if (spawn_timer.getElapsedTime() > sf::seconds(rand() % 100)) {
+                    Enemy enemy(100, 100);
+
+                    enemy_array.push_back(
+                        enemy
+                    );
+                    spawn_timer.restart();
+                }
+
                 window.clear(sf::Color::Black);
 
                 for (int i=0; i<player.bullet_array.size(); i++) {
@@ -165,10 +209,11 @@ class SpaceFighter {
                     player.bullet_array.erase(player.bullet_array.begin()+i);
                 }
 
-                sf::Time elapsed = clock.restart();
-                player.update(elapsed);
-
                 bullets_clear.clear();
+
+                for (int i=0; i<enemy_array.size(); i++) {
+                    window.draw(enemy_array[i]);
+                }
 
                 window.draw(player);
 
@@ -179,6 +224,7 @@ class SpaceFighter {
 
 sf::Texture Player::player_texture;
 sf::Texture Bullet::bullet_texture;
+sf::Texture Enemy::enemy_texture;
 
 int main() {
 
