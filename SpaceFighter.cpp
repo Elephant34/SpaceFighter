@@ -44,6 +44,7 @@ class Player: public sf::Sprite {
     int move_y;
 
     sf::Time shoot_timer = sf::seconds(0);
+    sf::Time shoot_cooldown = sf::milliseconds(400);
     
     public:
 
@@ -95,7 +96,7 @@ class Player: public sf::Sprite {
                 bullet
             );
 
-            shoot_timer = sf::milliseconds(400);
+            shoot_timer = shoot_cooldown;
         }
 
         return true;
